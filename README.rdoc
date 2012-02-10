@@ -1,0 +1,132 @@
+= GPlan - GraphPlan planner
+
+GPlan is an implementation of the GraphPlan planning algorithm. This
+implementation was created as a term project at Faculty of Mathematics and
+Physics, Charles University in Prague. It was never intended as a production
+planner; though it is capable of solving smaller problem and might be just
+fine for playing with the planner. 
+
+== Requirements
+
+Java SE 6 is all you need :)
+
+== Usage instruction
+
+Run the planner using the following command:
+
+ > java -jar GPlan.jar [-v] plan-file
+
+where plan-file is the name of the file with the specification of the planning
+problem. The plan discovered by the planner is printed to stdout. Use the -v
+option for more verbose output.
+
+== Input file format
+
+The actions are specified using a Prolog-like language. The names of
+predicates, constants and variables start with a small letter; then, they may
+contain any number of letters, numbers, dashes and underscores. Similar to
+Prolog, the names of predicates and constants start with a small letter; the
+names of variables start with a capital letter.
+
+The input file may contain files. These comments start with the percent
+sign (%) and end with the end of the line.
+
+Again, like in Prolog, each part of the input may span over multiple lines, and
+ends with a dot character (.).
+
+=== Initial state
+
+The initial state is specified by free-standing predicates, for example:
+
+ hand-empty.
+ on(a, ground).
+ on(b, a).
+ empty(b).
+
+=== Goal state
+
+Similar to the initial state, the goal state is described using free-standing
+predicates, starting with the keyword "goal". These predicates must be all
+fulfilled after finishing the plan.
+
+ goal hand-empty.
+ goal on(b, ground).
+ goal on(a, b).
+ goal empty(a).
+
+To make describing the goal state easier, any free-standing predicates in the
+input file after the keyword "goals" are treated as the specification of the
+goal state.
+
+=== Actions
+
+Specifications of actions are slightly different from the "classical" Prolog
+notation, but they're simple anyway. The actions are written down the following
+way:
+
+ action-name :: preconditions => effects.
+
+Preconditions is a list of predicates (separated by commas) that must be true
+before the action can be applied. The action can have either positive or
+negative effects; both are as predicates in a single list (separated by
+commas); the positive effects are predicates that become true after performing
+the action, the negative effects are preceded by keyword "not" and these
+predicates will be set to false after the action is performed. All variables in
+the action specification must appear at least once in the preconditions part.
+
+For example the action
+
+ pick-up :: hand-empty, empty(X), on(X, Y)
+         => holding(X), empty(Y), not empty(X), not on(X, Y), not hand-empty.
+
+is an action for picking-up object X from Y. The action has three
+preconditions: the hand must be empty, there must be nothing on object X, and
+X must be on the object Y. After the action is performed, the hand will be
+holding object X, and there will be nothing standing on the object Y; the
+object X will no longer be empty, and will no longer be standing on Y, and the
+hand will no longer be empty.
+
+== Output
+
+In case a plan is found, the program prints a sequence of actions in the plan
+that lead from the initial state to the goal state and the program terminates.
+The actions are printed with all variables bound, each action on one line.
+
+== Implementation
+
+The planner is implemented as a Java application; a detailed documentation of
+the code is written in Javadoc comment. Compared to the "classical"
+implementation, the action specification does not require the actions to be
+grounded, but uses a notation with variables, similar to Prolog. The actions
+are instantiated when a new action layer in the planning graph is created.
+This way of specifying actions allows for more compact specifications of the
+actions.
+
+The main part of the program is implemented in the class PlanningProblem, in
+the method PlanningProblem#solve(). This method first builds the planning graph
+by calling PlanningProblem#singleStep(). For each newly added layer, it
+verifies if all goal predicates are present in this layer and there is no mutex
+between any two of them. If it is the case, it tries plan extraction using
+PlanningProblem#findSerialPlan().
+
+The planning graph is represented as a series of double layers (action layer,
+predicate layer). These double layers are created both at once; the termination
+condition is only done on the predicate layer. Individual "double layers" are
+independent on each other, and they both contain full copy of the state. During
+the extraction of the plan, the discovered no-goods are cached in the predicate
+layer so that they do not need to be discovered again.
+
+=== Possible improvements
+
+* Typed variables that would specify the set of possible values and when
+  instantiating the actions, only valid assignment would be considered. The
+  same effect can be reached using additional predicates, but using types
+  would lead to cleaner specifications and smaller planning graph (and thus
+  to a more effective planning algorithm).
+* Support for "immutable" predicates that describe the properties of the
+  problem domain, but are not changed by any actions. Such predicates do not
+  need to be represented in the planning graph and there is no need to verify
+  mutexes for them.
+* Heuristics in the plan extraction procedure.
+* Incremental representation of layers in the planning graph to save memory
+  and computation.

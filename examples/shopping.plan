@@ -1,0 +1,21 @@
+%
+% A very simple shopping problem.
+%
+
+i-am-at(home).
+
+is-place(home).
+is-place(bank).
+is-place(shop).
+
+is-item(potatoes).
+is-item(screw-driver).
+
+go :: i-am-at(X), is-place(Y), distinct(X,Y) => not i-am-at(X), i-am-at(Y).
+withdraw-money :: i-am-at(bank) => i-have(money).
+buy :: i-am-at(shop), is-item(X), i-have(money) => i-have(X), not i-have(money).
+
+goal i-am-at(home).
+goal i-have(money).
+goal i-have(potatoes).
+goal i-have(screw-driver).

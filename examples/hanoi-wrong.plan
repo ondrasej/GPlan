@@ -1,0 +1,52 @@
+%
+% Towers of Hanoi with four discs. See http://en.wikipedia.org/wiki/Tower_of_Hanoi
+% for a detailed description of the problem.
+%
+% This version of the problem is (on purpose) specified in such way that it
+% DOES NOT HAVE a solution.
+%
+
+% An action to move disc from one place to another.
+move :: bigger(X, Y), empty(X), empty(Y), on(X, Z) => empty(Z), not empty(Y), not on(X, Z), on(X, Y).
+
+% Description of the relation of the sizes of the discs.
+bigger(k1,k2).
+bigger(k1,k3).
+bigger(k1,k4).
+bigger(k2,k3).
+bigger(k2,k4).
+bigger(k3,k4).
+bigger(k1,d1).
+bigger(k2,d1).
+bigger(k3,d1).
+bigger(k4,d1).
+bigger(k1,d2).
+bigger(k2,d2).
+bigger(k3,d2).
+bigger(k4,d2).
+bigger(k1,d3).
+bigger(k2,d3).
+bigger(k3,d3).
+bigger(k4,d3).
+
+% Description of the initial placement of the discs.
+on(k1,k2).
+on(k2,k3).
+on(k3,k4).
+on(k4,d1).
+empty(k1).
+empty(d2).
+empty(d3).
+
+% Description of the goal state.
+goal on(k1,k2).
+goal on(k2,k3).
+goal on(k3,k4).
+goal on(k4,d3).
+% The goal on(k2, k4) cannot be achieved at the same time as
+% the goal on(k2, k3); as a result, there is no solution to
+% this problem specification.
+goal on(k2,k4).
+goal empty(k1).
+goal empty(d1).
+goal empty(d2).
