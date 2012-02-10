@@ -1,5 +1,5 @@
 /*
-	Copyright 2006 Ondrej Sykora
+    Copyright 2006 Ondrej Sykora
  
     This file is part of GPlan.
 
